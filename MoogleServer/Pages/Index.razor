@@ -1,0 +1,75 @@
+﻿@page "/"
+
+<PageTitle>Moogle!</PageTitle>
+
+<h1 class="titulo">Moogle</h1>
+
+<input class="p-1 my-4" @bind="query" placeholder="Introduzca su búsqueda" @onkeyup="EnterMethod">
+
+<button type="default" class="buttonprimary" @onclick="RunQuery"></button>
+
+
+@if (!string.IsNullOrEmpty(result.Suggestion)) {
+    <div class="suggestion">
+        <p>¿Quisiste decir <strong><a href="#" @onclick="() => RunSugg(result.Suggestion)">@result.Suggestion</a></strong>?</p>
+    </div>
+}
+
+
+<ul class="results">
+@foreach (var item in result.Items()) {
+    <li>
+        <div class="item">
+            <p class="title" ><a href="#" @onclick="() => LoadDoc(item.Title)">@item.Title</a></p>
+            <p>... @item.Snippet ...</p>
+            <div class="poke"></div>
+        </div>
+    </li>
+}
+</ul>
+
+
+@code {
+    private string query = "";
+    private SearchResult result = new SearchResult();
+
+    private void boton(){
+        RunQuery();
+        
+    }
+
+    private void RunQuery() {
+        result = Moogle.Query(query);
+    }
+
+    private void RunSugg(string s) {
+        result = Moogle.Query(s);
+    }
+
+    private void EnterMethod(KeyboardEventArgs p)
+    {
+        if(p.Code == "Enter")
+        {
+            RunQuery();
+        }
+    }
+
+    private void LoadDoc(string title)
+    {
+        if (title == "No se han encontrado resultados para su búsqueda")
+            return;
+        string root = MoogleEngine.Reader.path;
+        char separator = Path.DirectorySeparatorChar;
+
+        using(System.Diagnostics.Process process = new System.Diagnostics.Process())
+        {
+            process.StartInfo.FileName = root + separator + title + ".txt";
+            process.StartInfo.UseShellExecute = true;
+            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
+            process.Start();
+        }
+    }
+
+
+
+}
